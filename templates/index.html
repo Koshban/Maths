@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primary 5 Maths Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: black;
+            background-image: url('{{ url_for('static', filename=background_image) }}');
+        }
+        #game {
+            font-weight: bold;
+        }
+        #finalMessage {
+            font-size: 20px;
+            color: red;
+        }
+        #answerInput {
+            width: 200px;  /* Smaller width */
+            padding: 5px;  /* Smaller padding */
+            font-size: 16px; /* Appropriate font size */
+        }
+    </style>
+</head>
+<body>
+    <body>
+        <div id="game">
+            <h1>Primary 5 Maths Game - Level <span id="level">{{ level }}</span></h1>
+            <div id="timer">45:00</div>
+            <div id="question-progress">Question: {{ total_questions }}</div>
+            <div id="questionDisplay">{{ question }}</div>
+            <input type="text" id="answerInput">
+            <button id="submitButton" onclick="submitAnswer()">Submit Answer</button>
+            <div id="scoreDisplay">Score: 0</div>
+            <div id="finalMessage"></div>
+            <img id="animeImage" style="display: none; width: 300px; height: auto;" src="" alt="Anime Art">
+        </div>
+    
+    <script>
+        function submitAnswer() {
+            const userAnswer = document.getElementById('answerInput').value;
+            fetch('/submit_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({user_answer: userAnswer})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.game_over) {
+                    document.getElementById('finalMessage').textContent = data.final_message;
+                    document.getElementById('answerInput').style.display = 'none';
+                    document.getElementById('submitButton').style.display = 'none';
+                } else {
+                    document.getElementById('questionDisplay').textContent = data.next_question;
+                    document.getElementById('scoreDisplay').textContent = "Score: " + data.score;
+                    document.getElementById('answerInput').value = ''; // Clear the input field
+                }
+                alert(data.correct ? "Correct!" : `Incorrect! Correct answer was: ${data.correct_answer}`);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Optional: Add fetchNextQuestion if you plan to use it
+        function fetchNextQuestion() {
+            fetch('/next_question')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('questionDisplay').textContent = data.question;
+                document.getElementById('answerInput').value = '';
+
+                if (data.game_over) {
+                    document.getElementById('finalMessage').textContent = data.final_message || "Game Over! Thanks for playing.";
+                    document.getElementById('answerInput').style.display = 'none';
+                    document.getElementById('submitButton').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching the next question:', error);
+                document.getElementById('finalMessage').textContent = "Error loading next question. Please try again!";
+            });
+        }
+    </script>
+</body>
+</html>
