@@ -51,28 +51,6 @@ function submitAnswer() {
     .catch(error => console.error('Error:', error));
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('startGameButton').addEventListener('click', function() {
-        const selectedLevel = document.getElementById('levelSelect').value;
-        startLevel(selectedLevel);
-    });
-});
-
-function setupLevelDropdown() {
-    const levelSelect = document.getElementById('levelSelect');
-    for (let i = 1; i <= 16; i++) {
-        const option = document.createElement('option');
-        option.value = i;
-        option.text = 'Level ' + i;
-        levelSelect.appendChild(option);
-    }
-    document.getElementById('startGameButton').addEventListener('click', function() {
-        const selectedLevel = document.getElementById('levelSelect').value;
-        console.log("Attempting to start level: " + selectedLevel); // Check if this logs in the console
-        startLevel(selectedLevel);
-    });
-}
-
 fetch('/submit_answer', {
     method: 'POST',
     headers: {
@@ -141,7 +119,6 @@ function startTimer(duration, display) {
 }
 
 window.onload = function () {
-    setupLevelDropdown();
     var fortyFiveMinutes = 60 * 45;
     var display = document.getElementById('timer');
     startTimer(fortyFiveMinutes, display);

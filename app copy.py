@@ -1,14 +1,24 @@
 import os
 import random
 import time
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from datetime import datetime, timedelta, timezone
 from collections import deque
 import random
+import argparse
 from common import config, triviaquestions
 
 app = Flask(__name__)
 app.secret_key = 'your_very_secure_secret_key'  # Change this to a real secret key in production
+
+# Set up argparse
+parser = argparse.ArgumentParser(description='Start the Math Game at a specific level.')
+parser.add_argument('level', type=int, choices=range(1, 17), help='The starting level of the game (1-16)')
+args = parser.parse_args()
+
+# Validate and set the level in Flask app config
+app.config['START_LEVEL'] = args.level
+print(f"After Args , Level is {app.config['START_LEVEL']}")
 
 def get_question(level, is_trivia=False):
     if is_trivia:
@@ -108,15 +118,7 @@ def get_random_anime_image():
 
 @app.route('/start_level/<int:level>', methods=['GET'])
 def start_level(level):
-    try:
-        question_set = getattr(config, f'question_answer_{level}')
-    except AttributeError:
-        flash('Selected level does not exist.', 'error')
-        return redirect(url_for('index'))
-
-    if not question_set:
-        flash('No questions available for this level.', 'error')
-        return redirect(url_for('index'))
+    print(f"Inside Start Level. Level is : {level}")
     session.clear()
     session['level'] = level
     session['math_questions'] = list(random.sample(list(getattr(config, f'question_answer_{level}').items()), 
@@ -128,18 +130,19 @@ def start_level(level):
     session['start_time'] = datetime.now(timezone.utc)  # Timezone-aware datetime set to UTC
 
     # Fetch the first question
-    fetch_next_question()
+    question, _ = fetch_next_question()
 
     # Get a random background image
     bg_image = random_bg_image()
 
     # Render the index.html template with the necessary variables
-    return render_template('index.html', question=session['current_question'], background_image=bg_image)
+    return render_template('index.html', question=question, level=level, total_questions=len(session['math_questions']), background_image=bg_image)
 
 @app.route('/')
 def index():
     # Redirect to the start_level route to initialize the game at level 1
-    return redirect(url_for('start_level', level=1))
+    #print(f"Inside Route / . Level is : {app.config['START_LEVEL']}")
+    return redirect(url_for('start_level', level=app.config['START_LEVEL']))
 
 @app.route('/next_question', methods=['GET'])
 def next_question():

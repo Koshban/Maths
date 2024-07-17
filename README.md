@@ -67,7 +67,7 @@ math-trivia-game/
 │ ├── images/
 │ │ ├── BackGround/
 │ │ └── AnimeArt/
-│ 
+│ |── script.js
 │
 ├── templates/
 │ └── index.html
@@ -140,7 +140,9 @@ math-trivia-game/
 │   ├── images/
 │   │   ├── BackGround/
 │   │   └── AnimeArt/
-│   └── styles.css
+│   ├── styles.css
+│   └── script.js 
+|
 ├── templates/
 │   └── index.html
 └── requirements.txt

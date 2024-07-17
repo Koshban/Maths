@@ -18,6 +18,7 @@ args = parser.parse_args()
 
 # Validate and set the level in Flask app config
 app.config['START_LEVEL'] = args.level
+print(f"After Args , Level is {app.config['START_LEVEL']}")
 
 def get_question(level, is_trivia=False):
     if is_trivia:
@@ -117,6 +118,7 @@ def get_random_anime_image():
 
 @app.route('/start_level/<int:level>', methods=['GET'])
 def start_level(level):
+    print(f"Inside Start Level. Level is : {level}")
     session.clear()
     session['level'] = level
     session['math_questions'] = list(random.sample(list(getattr(config, f'question_answer_{level}').items()), 
@@ -129,16 +131,18 @@ def start_level(level):
 
     # Fetch the first question
     question, _ = fetch_next_question()
+    total_questions = len(session.get('math_questions', []))
 
     # Get a random background image
     bg_image = random_bg_image()
 
     # Render the index.html template with the necessary variables
-    return render_template('index.html', question=question, level=level, total_questions=len(session['math_questions']), background_image=bg_image)
+    return render_template('index.html', question=question, level=level, total_questions=total_questions, background_image=bg_image)
 
 @app.route('/')
 def index():
     # Redirect to the start_level route to initialize the game at level 1
+    #print(f"Inside Route / . Level is : {app.config['START_LEVEL']}")
     return redirect(url_for('start_level', level=app.config['START_LEVEL']))
 
 @app.route('/next_question', methods=['GET'])

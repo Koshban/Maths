@@ -118,9 +118,15 @@ function startTimer(duration, display) {
     }, 1000);
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    var thirtyMinutes = 60 * 45;  // 45 minutes
+    var display = document.getElementById('timer');
+    startTimer(thirtyMinutes, display);
+});
+
 window.onload = function () {
     var fortyFiveMinutes = 60 * 45;
     var display = document.getElementById('timer');
     startTimer(fortyFiveMinutes, display);
-    submitAnswer(); // This is only for testing; remove it later
+    //submitAnswer(); // This is only for testing; remove it later
 };
