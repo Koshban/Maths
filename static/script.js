@@ -56,7 +56,7 @@ fetch('/submit_answer', {
     headers: {
         'Content-Type': 'application/json',
     },
-    body: JSON.stringify({user_answer: userAnswer})
+    body: JSON.stringify({user_answer: "userAnswer"})
 })
 .then(response => {
     if (!response.ok) {
@@ -69,10 +69,11 @@ fetch('/submit_answer', {
     if (data.next_question === "No more questions") {
         alert("No more questions available.");
     } else {
-        document.getElementById('question').textContent = data.next_question;
+        updateQuestionCounter(10, 15)
+        document.getElementById('questionDisplay').textContent = data.next_question;
     }
-    document.getElementById('score').textContent = "Score: " + data.score;
-    document.getElementById('answer').value = ''; // Clear the input field
+    document.getElementById('scoreDisplay').textContent = "Score: " + data.score;
+    document.getElementById('answerInput').value = ''; // Clear the input field
 })
 .catch(error => {
     console.error('There has been a problem with your fetch operation:', error);
@@ -128,5 +129,6 @@ window.onload = function () {
     var fortyFiveMinutes = 60 * 45;
     var display = document.getElementById('timer');
     startTimer(fortyFiveMinutes, display);
+    updateQuestionCounter(10, 15)
     //submitAnswer(); // This is only for testing; remove it later
 };
