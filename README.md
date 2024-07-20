@@ -1,4 +1,4 @@
-#  Built this using GenAI prompts. 
+#  Built this (mostly ) using GenAI prompts. 
 
 ## PerplexityPrompt to start the exercise: 
 You are a Maths teacher and a Child Psychologist who specializes in making maths more interesting for 10-12 year olds.
@@ -55,8 +55,6 @@ Reset the Quesion_answer dictionary on RESET session or once a new level is star
 
 The below is my project structure.
 
-
-## Project Structure
 
 math-trivia-game/
 |── common
@@ -120,9 +118,9 @@ This project is a web-based game that combines math questions and trivia. The ga
 4. **Run the app:**
 
     ```bash
-    python app.py
+    python app.py N
     ```
-
+    where N is the Level you wnat to play. e.g. python app.py 4
 5. **Open your browser and navigate to:**
 
     ```
@@ -142,6 +140,9 @@ math-trivia-game/
 │   │   └── AnimeArt/
 │   ├── styles.css
 │   └── script.js 
+|── usefulscripts/
+│   ├── create_question_sets.py
+│   └── create_text_from_pdf.py
 |
 ├── templates/
 │   └── index.html
@@ -166,10 +167,18 @@ math-trivia-game/
 
 ### Adding Questions
 
-To add more questions, edit the `triviaquestions.py` and `app.py` files:
-
-- **Math Questions**: Add new questions to the `question_answer_16` dictionary in `app.py`.
 - **Trivia Questions**: Add new questions to the `trivia_questions` dictionary in `triviaquestions.py`.
+- **Math Questions**: To add more Maths Questions questions, 
+    add them to dict question_answer.
+    run usefulscripts/create_question_sets.py
+        Change the range operator in the script above to modify the number of question sets you want
+        Input those in some LLM , see prompt under section "ClaudePrompt to generate questions"
+        Update the dictionaries in config , named question_answer_{N}.
+
+### Adding/Changing Images
+
+You can add them under static/images folder.
+To generate more yourself, see prompt under section "artgenerator Prompts for generating the images"
 
 ### Changing Background Images
 
@@ -181,4 +190,11 @@ Feel free to fork this repository and submit pull requests. For major changes, p
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under a modified version of the MIT License that includes non-commercial use restrictions and revenue sharing terms. See the [LICENSE.txt](LICENSE.txt) file for more details.
+
+Key points:
+- Anyone is free to use, copy, modify, merge, publish, distribute, sublicense, and/or modify copies of the software.
+- Commercial use of the software is not allowed without express written permission from the copyright holder, Kaushik Banerjee.
+- If commercial use is permitted, the user must share 20% of the revenue generated from the commercial use with the copyright holder.
+
+For more information about the license terms and conditions, please refer to the [LICENSE.txt](LICENSE.txt) file.
