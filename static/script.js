@@ -9,10 +9,12 @@ function startLevel(level) {
 
 function updateUI(data) {
     if (data.game_over) {
-        document.getElementById('finalMessage').textContent = data.final_message;
+        var formattedFinalMessage = data.final_message.replace(/\n/g, '<br>');
+        document.getElementById('finalMessage').innerHTML  = formattedFinalMessage;
         document.getElementById('answerInput').style.display = 'none';
         document.getElementById('submitButton').style.display = 'none';
     } else {
+        var formattedFinalMessage = data.final_message.replace(/\n/g, '<br>');
         document.getElementById('questionDisplay').textContent = data.next_question;
         document.getElementById('scoreDisplay').textContent = "Score: " + data.score;
     }
@@ -20,7 +22,7 @@ function updateUI(data) {
 
 
 function submitAnswer() {
-    const userAnswer = document.getElementById('answerInput').value; // Ensure you are using 'answerInput' as the ID in your HTML
+    const userAnswer = document.getElementById('answerInput').value; 
     fetch('/submit_answer', {
         method: 'POST',
         headers: {
@@ -33,9 +35,10 @@ function submitAnswer() {
         document.getElementById('questionDisplay').textContent = data.next_question; // Update question display
         document.getElementById('scoreDisplay').textContent = "Score: " + data.score; // Update score display
         document.getElementById('answerInput').value = ''; // Clear the input field
-
+        updateQuestionCounter(data.current_question, data.total_questions);
         if (data.game_over) {
-            document.getElementById('finalMessage').textContent = data.final_message + " Final Score: " + data.score; // Display final message and score
+            var formattedFinalMessage = data.final_message.replace(/\n/g, '<br>');
+            document.getElementById('finalMessage').innerHTML = formattedFinalMessage //+ " Final Score: " + data.score; // Display final message and score
             document.getElementById('answerInput').style.display = 'none'; // Hide the answer input
             document.getElementById('submitButton').style.display = 'none'; // Hide the submit button
             // Display the anime image if URL is provided
@@ -51,34 +54,6 @@ function submitAnswer() {
     .catch(error => console.error('Error:', error));
 }
 
-fetch('/submit_answer', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({user_answer: "userAnswer"})
-})
-.then(response => {
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    return response.json();
-})
-.then(data => {
-    console.log("Received data:", data);
-    if (data.next_question === "No more questions") {
-        alert("No more questions available.");
-    } else {
-        updateQuestionCounter(10, 15)
-        document.getElementById('questionDisplay').textContent = data.next_question;
-    }
-    document.getElementById('scoreDisplay').textContent = "Score: " + data.score;
-    document.getElementById('answerInput').value = ''; // Clear the input field
-})
-.catch(error => {
-    console.error('There has been a problem with your fetch operation:', error);
-});
-
 function fetchNextQuestion() {
     fetch('/next_question')
     .then(response => response.json())
@@ -88,15 +63,17 @@ function fetchNextQuestion() {
 
         if (data.game_over) {
             // Handle the game over scenario
-            document.getElementById('finalMessage').textContent = data.final_message || "Game Over! Thanks for playing.";
+            var formattedFinalMessage = data.final_message.replace(/\n/g, '<br>');
+            document.getElementById('finalMessage').innerHTML = formattedFinalMessage || "Game Over! Thanks for playing.";
             document.getElementById('answerInput').style.display = 'none'; // Hide the answer input
             document.getElementById('submitButton').style.display = 'none'; // Hide the submit button
         }
     })
     .catch(error => {
+        var formattedFinalMessage = data.final_message.replace(/\n/g, '<br>');
         console.error('Error fetching the next question:', error);
         // Optionally display an error message to the user
-        document.getElementById('finalMessage').textContent = "Error loading next question. Please try again!";
+        document.getElementById('finalMessage').innerHTML = "Error loading next question. Please try again!";
     });
 }
 
@@ -120,15 +97,15 @@ function startTimer(duration, display) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    var thirtyMinutes = 60 * 45;  // 45 minutes
+    var fortyFiveMinutes  = 60 * 45;  // 45 minutes
     var display = document.getElementById('timer');
-    startTimer(thirtyMinutes, display);
+    startTimer(fortyFiveMinutes , display);
 });
 
 window.onload = function () {
-    var fortyFiveMinutes = 60 * 45;
+    //var fortyFiveMinutes = 60 * 45;
     var display = document.getElementById('timer');
     startTimer(fortyFiveMinutes, display);
-    updateQuestionCounter(10, 15)
+    
     //submitAnswer(); // This is only for testing; remove it later
 };

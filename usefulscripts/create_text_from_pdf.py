@@ -1,6 +1,9 @@
 from common.config import *
+import logging
 from PyPDF2 import PdfReader
-print(base_dir)
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.debug(base_dir)
 
 output_file = os.path.join(PDFstoReadFolder, "output.txt")
 
@@ -13,7 +16,7 @@ with open(file=output_file, mode="w", encoding='utf-8') as text_file:
     for pdf_file in pdf_files:
         # Construct the full file path
         file_path = os.path.join(PDFstoReadFolder, pdf_file)
-        print(f"Trying to read : {file_path}")
+        logging.debug(f"Trying to read : {file_path}")
         
         # Open the PDF file
         with open(file_path, "rb") as pdf:
@@ -29,4 +32,4 @@ with open(file=output_file, mode="w", encoding='utf-8') as text_file:
                 text_file.write(text)
                 text_file.write("\n")  # Add a newline for readability
 
-print("Text extraction completed. Output saved to", output_file)
+logging.debug("Text extraction completed. Output saved to", output_file)
