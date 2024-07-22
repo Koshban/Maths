@@ -102,9 +102,6 @@ def fetch_next_question():
         function_name = inspect.getframeinfo(current_frame).function
         logging.debug(f"Current Maths Count: {math_questions_answered} Inside Else ELSE of {function_name}")
 
-    # session['current_question'] = question
-    # session['current_answer'] = answer
-    # session['question_count'] = math_questions_answered + 1
     current_frame = inspect.currentframe()
     function_name = inspect.getframeinfo(current_frame).function
     logging.debug(f"Current Question Count: {session['question_count']} Inside 2nd logging of {function_name}")
@@ -213,12 +210,20 @@ def next_question():
 def submit_answer():
     user_answer = request.json['user_answer'].strip()
     correct_answer = session.get('current_answer', '').strip()
+    # Normalize the answers by removing all spaces
+    normalized_user_answer = ''.join(user_answer.split()).lower()
+    normalized_correct_answer = ''.join(correct_answer.split()).lower()
     # Initialize 'message' at the top to ensure it always has a value
     message = "Unexpected error occurred"  # Default message
+    # Attempt to compare as floats if possible, otherwise compare as lowercased strings
     try:
-        is_correct = float(user_answer) == float(correct_answer)
+        # Extract numbers from strings for comparison
+        user_number = float(''.join(filter(str.isdigit, normalized_user_answer)))
+        correct_number = float(''.join(filter(str.isdigit, normalized_correct_answer)))
+        is_correct = user_number == correct_number
     except ValueError:
-        is_correct = user_answer.lower() == correct_answer.lower()
+        # If not numbers, compare as strings
+        is_correct = normalized_user_answer == normalized_correct_answer
 
     if is_correct:
         session['score'] += 10  # Each correct answer gives 10 points
