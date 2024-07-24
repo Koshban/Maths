@@ -6,6 +6,7 @@ import random
 import argparse
 import inspect
 import logging
+import re
 from common import config, triviaquestions
 
 app = Flask(__name__)
@@ -49,6 +50,7 @@ def fetch_next_question():
     questions = session['math_questions']
     math_questions_answered = session.get('math_questions_answered', 0)
     trivia_questions_answered = session.get('trivia_questions_answered', 0)
+    total_trivia_questions = 3 # session.get('total_trivia_questions', 0) 
     current_frame = inspect.currentframe()
     function_name = inspect.getframeinfo(current_frame).function
     logging.debug(f"Questions are : {questions} Inside 1st Logging of {function_name}")
@@ -67,15 +69,18 @@ def fetch_next_question():
     logging.debug(f"Is Trivia Time: {is_trivia_time}")
 
     if is_trivia_time:
-        question, answer = get_trivia_question()
-        session['trivia_questions_answered'] += 1
+        if trivia_questions_answered < total_trivia_questions:
+            question, answer = get_trivia_question()
+            logging.debug(f"Trivia Question: {question} Inside {function_name}")
+            logging.debug(f"Trivia Answer: {answer} Inside {function_name}")
+            session['trivia_questions_answered'] += 1
     elif math_questions_answered < total_math_questions:
         #question, answer = session['math_questions'][math_questions_answered]
         question, answer = questions[math_questions_answered]
-        session['current_question'] = question
-        session['current_answer'] = answer
+        # session['current_question'] = question
+        # session['current_answer'] = answer
         session['math_questions_answered'] = math_questions_answered + 1
-        session['question_count'] = math_questions_answered + 1
+        # session['question_count'] = math_questions_answered + 1
         current_frame = inspect.currentframe()
         function_name = inspect.getframeinfo(current_frame).function
         logging.debug(f"Current Maths Count: {math_questions_answered} Inside Else IF of {function_name}")
@@ -102,10 +107,18 @@ def fetch_next_question():
         function_name = inspect.getframeinfo(current_frame).function
         logging.debug(f"Current Maths Count: {math_questions_answered} Inside Else ELSE of {function_name}")
 
+    session['current_question'] = question
+    session['current_answer'] = answer
+    #session['math_questions_answered'] = math_questions_answered + 1
+    session['question_count'] = math_questions_answered + 1
+    #session['trivia_questions_answered'] += is_trivia_time 
+
     current_frame = inspect.currentframe()
     function_name = inspect.getframeinfo(current_frame).function
     logging.debug(f"Current Question Count: {session['question_count']} Inside 2nd logging of {function_name}")
     logging.debug(f"Current Maths Count: {math_questions_answered } Inside 2nd logging of {function_name}")
+    logging.debug(f"Current Question to be returned is : {question } Inside 2nd logging of {function_name}")
+    logging.debug(f"Current Answer to be returned is : {answer } Inside 2nd logging of {function_name}")
 
     return question, answer
 
@@ -166,64 +179,19 @@ def start_level(level):
 
 @app.route('/')
 def index():
-    # Redirect to the start_level route to initialize the game at level 1
-    #logging.debug(f"Inside Route / . Level is : {app.config['START_LEVEL']}")
     return redirect(url_for('start_level', level=app.config['START_LEVEL']))
-
-@app.route('/next_question', methods=['GET'])
-def next_question():
-    level = session['level']
-    total_math_questions = len(session['math_questions'])
-    math_questions_answered = session['math_questions_answered']
-    trivia_questions_answered = session['trivia_questions_answered']
-
-    is_trivia_time = (math_questions_answered % 5 == 0 and math_questions_answered != 0) or \
-                     (math_questions_answered == total_math_questions and trivia_questions_answered < 1)
-    current_frame = inspect.currentframe()
-    function_name = inspect.getframeinfo(current_frame).function
-    logging.debug(f"Current Question Count: {session['question_count']} Inside {function_name}")
-    logging.debug(f"Current Maths Count: {math_questions_answered} 1st LOGGING Inside {function_name}")
-    if is_trivia_time:
-        question, answer = get_trivia_question()
-        session['trivia_questions_answered'] += 1
-    else:
-        if math_questions_answered < total_math_questions:
-            question, answer = session['math_questions'][math_questions_answered]
-            session['math_questions_answered'] += 1
-            current_frame = inspect.currentframe()
-            function_name = inspect.getframeinfo(current_frame).function
-            logging.debug(f"Current Question Count: {session['question_count']} Inside Else IF of {function_name}")
-            logging.debug(f"Current Maths Count: {math_questions_answered} Inside Else IF of {function_name}")
-        else:
-            # Handle case where no more questions are available
-            question, answer = "No more questions", "N/A"
-
-    session['current_answer'] = answer
-    session['question_count'] += 1
-    current_frame = inspect.currentframe()
-    function_name = inspect.getframeinfo(current_frame).function
-    logging.debug(f"Current Question Count: {session['question_count']} Inside 2nd Logging of {function_name}")
-
-    return jsonify(question=question)
 
 @app.route('/submit_answer', methods=['POST'])
 def submit_answer():
-    user_answer = request.json['user_answer'].strip()
-    correct_answer = session.get('current_answer', '').strip()
-    # Normalize the answers by removing all spaces
-    normalized_user_answer = ''.join(user_answer.split()).lower()
-    normalized_correct_answer = ''.join(correct_answer.split()).lower()
+    current_frame = inspect.currentframe()
+    function_name = inspect.getframeinfo(current_frame).function
+    user_answer = request.json['user_answer'].strip().lower()
+    correct_answer = session.get('current_answer', '').strip().lower()
+    logging.debug(f"user_answer: {user_answer} Inside {function_name}")
+    logging.debug(f"correct_answer: {correct_answer} Inside {function_name}")
     # Initialize 'message' at the top to ensure it always has a value
     message = "Unexpected error occurred"  # Default message
-    # Attempt to compare as floats if possible, otherwise compare as lowercased strings
-    try:
-        # Extract numbers from strings for comparison
-        user_number = float(''.join(filter(str.isdigit, normalized_user_answer)))
-        correct_number = float(''.join(filter(str.isdigit, normalized_correct_answer)))
-        is_correct = user_number == correct_number
-    except ValueError:
-        # If not numbers, compare as strings
-        is_correct = normalized_user_answer == normalized_correct_answer
+    is_correct = user_answer == correct_answer
 
     if is_correct:
         session['score'] += 10  # Each correct answer gives 10 points
@@ -233,15 +201,15 @@ def submit_answer():
         message = f"Incorrect Correct answer was: {correct_answer}"
 
     # Always fetch the next question regardless of the correctness of the answer
+    
     next_question, next_answer = fetch_next_question()
     total_questions = len(session.get('math_questions', []))  
     anime_image_url = get_random_anime_image()  # Get a random anime image
-    current_frame = inspect.currentframe()
-    function_name = inspect.getframeinfo(current_frame).function
+    
     logging.debug("After submitting answer:")
-    #logging.debug("Current Question Count:", session['question_count'])
     logging.debug(f"Math Questions Answered: {session['math_questions_answered']} Inside {function_name}")
     logging.debug(f"Trivia Questions Answered: {session['trivia_questions_answered']}")
+    logging.debug(f"correct_answer: {correct_answer}")
     logging.debug(f"game_over: {session.get('game_over', False)}")
     logging.debug(f"final_message: {session.get('final_message', '  ')}")
     logging.debug(f"anime_image_url: anime_image_url")
@@ -262,6 +230,7 @@ def submit_answer():
         'current_question': session['math_questions_answered'],  
         'total_questions': total_questions
     }
+    logging.debug(f"Returning  : {result}")
     return jsonify(result)
     
 

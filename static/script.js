@@ -7,20 +7,6 @@ function startLevel(level) {
     window.location.href = `/start_level/${level}`;
 }
 
-function updateUI(data) {
-    if (data.game_over) {
-        var formattedFinalMessage = data.final_message.replace(/\n/g, '<br>');
-        document.getElementById('finalMessage').innerHTML  = formattedFinalMessage;
-        document.getElementById('answerInput').style.display = 'none';
-        document.getElementById('submitButton').style.display = 'none';
-    } else {
-        var formattedFinalMessage = data.final_message.replace(/\n/g, '<br>');
-        document.getElementById('questionDisplay').textContent = data.next_question;
-        document.getElementById('scoreDisplay').textContent = "Score: " + data.score;
-    }
-}
-
-
 function submitAnswer() {
     const userAnswer = document.getElementById('answerInput').value; 
     fetch('/submit_answer', {
@@ -37,10 +23,13 @@ function submitAnswer() {
         document.getElementById('answerInput').value = ''; // Clear the input field
         updateQuestionCounter(data.current_question, data.total_questions);
         if (data.game_over) {
+            alert(data.correct ? "Correct!" : `Incorrect! Correct answer was: ${data.correct_answer}`);
+            clearInterval(timerInterval);
             var formattedFinalMessage = data.final_message.replace(/\n/g, '<br>');
-            document.getElementById('finalMessage').innerHTML = formattedFinalMessage //+ " Final Score: " + data.score; // Display final message and score
+            document.getElementById('finalMessage').innerHTML = formattedFinalMessage 
             document.getElementById('answerInput').style.display = 'none'; // Hide the answer input
             document.getElementById('submitButton').style.display = 'none'; // Hide the submit button
+            alert("Game over! " + data.final_message);
             // Display the anime image if URL is provided
             if (data.anime_image_url) {
                 const imgElement = document.getElementById('animeImage');
@@ -76,10 +65,10 @@ function fetchNextQuestion() {
         document.getElementById('finalMessage').innerHTML = "Error loading next question. Please try again!";
     });
 }
-
+var timerInterval;
 function startTimer(duration, display) {
     var timer = duration, minutes, seconds;
-    var interval = setInterval(function () {
+    timerInterval = setInterval(function () {
         minutes = parseInt(timer / 60, 10);
         seconds = parseInt(timer % 60, 10);
 
@@ -94,6 +83,7 @@ function startTimer(duration, display) {
             // Optionally, handle what to do next, e.g., end the game or move to the next level
         }
     }, 1000);
+    return timerInterval;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
